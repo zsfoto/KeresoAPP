@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Kereso",
+    "slug": "kereso",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "splash" : {
+      "image": "./src/assets/splash_xxxhdpi.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    }
+  }
+}
