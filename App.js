@@ -11,7 +11,7 @@ import Icon from './src/utils/VectorIcon'
 import Color from './src/utils/Colors'
 
 import ScreenHome from './src/screens/Home'
-import ScreenGroups from './src/screens/Groups'
+import ScreenCategories from './src/screens/Categories'
 import ScreenPersons from './src/screens/Persons'
 import ScreenDetails from './src/screens/Details';
 import ScreenInformations from './src/screens/Informations'
@@ -23,7 +23,7 @@ import ScreenSettings from './src/screens/Settings'
 const NavGroups = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name='Groups' component={ScreenGroups} />
+      <Stack.Screen name='Groups' component={ScreenCategories} />
       <Stack.Screen name='Persons' component={ScreenPersons} />
       <Stack.Screen name='Details' component={ScreenDetails} />
     </Stack.Navigator>
@@ -75,7 +75,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <StatusBar style="light" backgroundColor={Color.vismeBgBlue39}/>
+      <StatusBar style="light" backgroundColor='#14557B'/>
 
       <Tab.Navigator
         screenOptions={({ route }) => ({

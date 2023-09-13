@@ -13,6 +13,7 @@ export default function Details({navigation, route}) {
   const [searchValue, onChangeSearchValue] = useState(true);
   const [person, setPerson] = useState([]);
   const [phones, setPhones] = useState([]);
+  const [openings, setOpenings] = useState([]);
   let id = route.params.id
   let title = route.params.title
   
@@ -21,25 +22,415 @@ export default function Details({navigation, route}) {
       headerTitle: title,
     });
   }, []);
+  
 
-  const ShowPhones = () => {
-    return phones.map((phones, index) => {
-      return (
-        <TouchableOpacity key={index} style={styles.row} onPress={() => alert(phones.name)}>
-          <View>
-            <Text>{phones.name}</Text>
-            <Text>{phones.description}</Text>
-            <Text>{phones.phone} / {phones.ext}</Text>
-          </View>
-        </TouchableOpacity>
+  useEffect(() => {
+
+    db.transaction(tx => {
+      tx.executeSql('SELECT * FROM persons WHERE id=' + id, 
+        null,
+        (txObj, resultSet) => setPerson(resultSet.rows._array),
+        (txObj, error) => console.log(error)
+      );
+    });
+
+    db.transaction(tx => {
+      //tx.executeSql('SELECT * FROM phones WHERE person_id=' + id + ' ORDER BY pos ASC, name ASC',
+      tx.executeSql('SELECT * FROM phones',
+        null,
+        (txObj, resultSet) => setPhones(resultSet.rows._array),
+        (txObj, error) => console.log(error)
+      );
+    });
+
+
+    db.transaction(tx => {
+      //tx.executeSql('SELECT * FROM openings  WHERE person_id=' + id + ' ORDER BY pos ASC, name ASC',
+      tx.executeSql('SELECT * FROM openings',
+        null,
+        (txObj, resultSet) => setOpenings(resultSet.rows._array),
+        (txObj, error) => console.log(error)
+      );
+    });
+
+    //alert(person)
+    //alert(phones.length)
+    //alert(openings.length)
+
+    setIsLoading(false);
+  }, [db]);
+  
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loading}>
+          <Text>Loading persons...</Text>
+        </View>
+      </View>
+    )
+
+  }
+
+  //let id = route.params.id
+  const search = (searchValue) => {
+    onChangeSearchValue(searchValue)
+    db.transaction(tx => {
+      tx.executeSql('SELECT * FROM phones WHERE person_id = ' + id + ' AND (name LIKE "%' + searchValue + '%" OR slug LIKE "%' + searchValue + '%") ORDER BY pos ASC, name ASC', null,
+        (txObj, resultSet) => setPhones(resultSet.rows._array),
+        (txObj, error) => console.log(error)
       );
     });
   }
 
-  const showPerson = () => {
+  // {showDetailsMainRow('Tel.:', person.phone, 'call-out')}
+  const showDetailsMainRow = (title, data, type, icon) => {
+    if (data != '' && data != 'null'){
+      return (
+        <View style={styles.mainRow}>
+          <View style={styles.mainRowLabel}>
+            <Text style={styles.mainLabel}>{title}</Text>
+          </View>
+          <View style={styles.mainRowData}>
+            <Text style={styles.mainData}>{data}</Text>
+          </View>
+          <View style={styles.mainRowIcon}>
+            <Icon type={type} name={icon} size={32} color='gray' />
+          </View>
+        </View>
+      );
+    }
+  }
+
+  const showDetails = () => {
     return person.map((person, index) => {
       return (
-        <View style={styles.container} key={index}>
+        <View style={styles.details} key={index}>
+          <View style={styles.detailsTop}>
+            <View style={styles.detailRow}>
+              <Text style={styles.name}>{person.name}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.description}>{person.description}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.address}>{person.address}</Text>
+            </View>
+          </View>
+
+          {showDetailsMainRow('Tel.:', person.phone, 'SimpleLineIcons', 'call-out')}
+          {showDetailsMainRow('2. tel.:', person.phone2, 'SimpleLineIcons', 'call-out')}
+          {showDetailsMainRow('Fax.:', person.fax, 'SimpleLineIcons', 'call-out')}
+          {showDetailsMainRow('E-mail.:', person.email, 'Entypo', 'email')}
+
+          {showOpenings()}
+          {showPhones()}
+
+        </View>
+      );
+    });
+  }
+
+  const showOpenings = () => {
+    return openings.map((openings, index) => {
+      alert(openings.open_from)
+      alert(index)
+      /*
+      return (
+        <View style={styles.mainRowLabel}>
+          <Text style={styles.mainLabel}>asd: {phones.ext}</Text>
+        </View>
+      )
+      */
+    })
+  }
+
+  const showPhones = () => {
+    return phones.map((phones, index) => {
+      //alert(phones.phone)
+      //alert(index)
+
+      /*
+      return (
+        <View style={styles.mainRowLabel}>
+          <Text style={styles.mainLabel}>asd: {phones.ext}</Text>
+        </View>
+      )
+      */
+    })
+  }
+
+/*
+    return phones.map((phones, index) => {
+      return (
+        <View style={styles.mainRowLabel} key={index}>
+          <Text style={styles.mainLabel}>{title}</Text>
+        </View>
+      )
+    });
+*/
+
+
+/*
+      return (
+        <TouchableOpacity key={index} style={styles.row} onPress={() => alert(phones.name)}>
+          <View style={styles.mainRow}>
+            <View style={styles.mainRowLabel}>
+              <Text style={styles.mainLabel}>{title}</Text>
+            </View>
+            <View style={styles.mainRowData}>
+              <Text style={styles.mainData}>{data}</Text>
+            </View>
+            <View style={styles.mainRowIcon}>
+              <Icon type={type} name={icon} size={32} color='gray' />
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+      */
+
+
+  return (
+    <SafeAreaView style={styles.container}>      
+      <View style={styles.searchRow}>
+        <TextInput style={styles.input} placeholder='További telefonszám keresése...' onChangeText={(searchValue) => search(searchValue)} value={searchValue} />
+        <View style={styles.searchicon}>
+          <Text style={styles.searchicontext} onPress={() => search('')}>X</Text>
+        </View>
+      </View>
+      
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.rowContainer}>
+          {showDetails()}
+        </View>
+      </ScrollView>        
+      
+    </SafeAreaView>
+  )
+}
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginTop: 5,
+    //marginBottom: 110,
+    flexDirection: 'row',
+    backgroundColor: '#eee',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+  },
+  subContainer: {
+    flex: 1,
+  },
+  scrollView: {
+    backgroundColor: '#fff',
+  },
+    searchRow: {
+      flexGrow: 1,
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: '#ccf',
+      flexDirection: 'row',
+      backgroundColor: 'white',
+      justifyContent: 'flex-start',
+      padding: 3,
+      marginBottom: 5,
+    },
+
+    rowContainer: {
+      flex: 1,
+      marginBottom: 110,
+      //padding: 10,
+      margin: 3,
+      //backgroundColor: 'red',
+    },
+    details: {
+      //backgroundColor: 'red',
+      //borderWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: '#ccc',
+      //backgroundColor: 'red',
+      padding: 5,
+    },
+    detailsTop: {
+      marginBottom: 10,
+    },
+    detailRow: {
+      flexGrow: 1,
+      borderWidth: 0,
+      //borderTopWidth: 1,
+      //borderBottomWidth: 1,
+      borderColor: '#acc',
+      flexDirection: 'row',
+      backgroundColor: 'white',
+      justifyContent: 'flex-start',
+      padding: 2,
+      marginBottom: 0,
+      //height: 60,
+      //verticalAlign: 'middle',
+    },
+      name: {
+        fontSize: 20,
+        fontWeight: 'bold',
+      },
+      description: {
+        fontSize: 16,
+        fontWeight: 'normal',
+      },
+      address: {
+        fontSize: 14,
+        fontWeight: 'bold',
+      },
+
+    mainRow: {
+      flexGrow: 1,
+      borderTopWidth: 0,
+      borderBottomWidth: 0,
+      borderColor: '#acc',
+      flexDirection: 'row',
+      backgroundColor: 'white',
+      justifyContent: 'flex-start',
+      padding: 3,
+      marginBottom: 10,
+      height: 50,
+      backgroundColor: '#f5f5f5',
+      //paddingTop: 10,
+      //verticalAlign: 'middle',
+    },
+      mainRowLabel: {
+        paddingTop: 10,
+        width: 65,
+        borderWidth: 0,
+      },
+      mainRowData: {
+        padding: 8,
+        paddingTop: 10,
+        //width: 70,
+        //borderWidth: 1,
+        flexGrow: 1,
+      },
+      mainRowIcon: {
+        paddingLeft: 10,
+        paddingTop: 5,
+        width: 52,
+        borderLeftWidth: 1,
+        borderColor: '#ccc',
+        borderWidth: 0,
+      },
+        mainLabel: {
+          fontSize: 16,
+          fontWeight: 'bold',
+          color: '#888',
+          paddingRight: 5,
+          textAlign: 'right',
+        },
+        mainData: {
+          fontSize: 16,
+          fontWeight: 'bold',
+          //color: 'red',
+          textAlign: 'left',
+        },
+
+    row: {
+      flexGrow: 1,
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: '#acc',
+      flexDirection: 'row',
+      backgroundColor: 'white',
+      justifyContent: 'flex-start',
+      padding: 3,
+      marginBottom: 5,
+      //height: 60,
+      //verticalAlign: 'middle',
+    },
+      input: {
+        backgroundColor: '#fff',
+        height: 26,
+        padding: 0,
+        paddingLeft: 7,
+        paddingTop: 0,
+        fontSize: 18,
+        flexGrow: 1,
+      },
+      searchicon: {
+        width: 40,        
+      },
+      searchicontext: {
+        borderWidth: 1,
+        borderColor: '#aaa',
+        backgroundColor: '#eee',
+        textAlign: 'center',
+        fontSize: 20,
+        fontWeight: 'bold',
+      },
+
+      icon: {
+        borderWidth: 0,
+        backgroundColor: 'white',
+        padding: 3,
+        alignItems: 'center',
+        //justifyContent: 'flex-start',
+        justifyContent: 'center',
+        width: 40,
+        height: 40,
+      },
+      text: {
+        marginLeft: 0,
+        marginTop: 0,
+        borderWidth: 0,
+        backgroundColor: 'white',
+        flexGrow: 1,
+        padding: 5,
+        paddingTop: 1,
+        paddingLeft: 1,
+      },
+      textTitle: {
+        marginLeft: 7,
+        borderWidth: 0,
+        backgroundColor: 'white',
+        //flexGrow: 1,
+        padding: 2,
+        paddingTop: 0,
+        paddingBottom: 0,
+        fontWeight: 'bold',
+        marginBottom: 0,
+        //fontSize: 16,
+        fontSize: 20,
+      },
+      textSubTitle: {
+        marginLeft: 5,
+        borderWidth: 0,
+        backgroundColor: 'white',
+        //flexGrow: 1,
+        padding: 5,
+        paddingTop: 0,
+        marginTop: 0,
+      }
+
+});
+
+
+/*
+        <View style={styles.subContainer} key={index}>
+
+          <View style={styles.personBox}>
+            <View style={styles.row}>
+              <Text>{person.name}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text>{person.category_id}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text>{person.description}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text>{person.address}</Text>
+            </View>
+
+          </View>
+
 
           <View style={styles.person}>
             <Text style={styles.title}>{person.name}</Text>
@@ -54,36 +445,8 @@ export default function Details({navigation, route}) {
             <ShowPhones />
           </View>
         </View>
-      );
-    });
-  }
 
-  useEffect(() => {
-    db.transaction(tx => {
-      tx.executeSql('SELECT * FROM persons WHERE id=' + id, null,
-        (txObj, resultSet) => setPerson(resultSet.rows._array),
-        (txObj, error) => console.log(error)
-      );
-    });
-
-    db.transaction(tx => {
-      tx.executeSql('SELECT * FROM phones WHERE person_id=' + id + ' ORDER BY pos ASC, name ASC', null,
-        (txObj, resultSet) => setPhones(resultSet.rows._array),
-        (txObj, error) => console.log(error)
-      );
-    });
-
-    setIsLoading(false);
-  }, [db]);
-  
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.loading}>
-          <Text>Loading persons...</Text>
-        </View>
-      </View>
-    )
+*/
     /*
     return (
       <View style={styles.container}>
@@ -91,21 +454,9 @@ export default function Details({navigation, route}) {
       </View>
     )
     */
-  }
 
-  //let id = route.params.id
-
-  const search = (searchValue) => {
-    onChangeSearchValue(searchValue)
-    db.transaction(tx => {
-      tx.executeSql('SELECT * FROM phones WHERE person_id = ' + id + ' AND name LIKE "%' + searchValue + '%" ORDER BY pos ASC, name ASC', null,
-        (txObj, resultSet) => setPhones(resultSet.rows._array),
-        (txObj, error) => console.log(error)
-      );
-    });
-  }
-
-  return (
+    
+/*
     <SafeAreaView style={styles.container}>
       <TextInput 
         placeholder='Keresés'
@@ -113,117 +464,8 @@ export default function Details({navigation, route}) {
         onChangeText={(searchValue) => search(searchValue)}
         value={searchValue}
       />      
-      <ScrollView>
-        {showPerson()}
+      <ScrollView style={styles.scrollView}>
+        {showDetails()}
       </ScrollView>
     </SafeAreaView>
-  )
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    //marginTop:  24,
-    paddingTop: 4,
-    paddingBottom: 60,
-    backgroundColor: Color.white,
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-  },
-
-  person: {
-    flex: 1,
-    padding: 10,
-    backgroundColor: Color.vismeBg39,
-    width: '100%',
-    borderBottomWidth: 2,
-  },
-  title: {
-    fontWeight: 'bold',
-    fontSize: 20,
-    paddingBottom: 8,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    textAlign: 'center',
-    margin: 8,
-  },
-  row: {
-    //flex: 1,
-    flexDirection: 'row',
-    //alignItems: 'flex-start',
-    padding: 8,
-    width: '100%',
-    height: 80,
-    marginBottom: 0,
-    borderTopWidth: 1,
-    borderColor: Color.lightGray,
-    backgroundColor: Color.white,
-    width: windowWidth,
-  },
-
-    icon: {
-      width: 50,
-      height: 50,
-      alignItems: 'center',
-      borderWidth: 1,
-      padding: 4,
-      borderColor: Color.lightGray,
-      marginRight: 8,
-      borderRadius: 25,
-    },
-    text: {
-      width: windowWidth - 70,
-      backgroundColor: Color.white,
-    },
-
-
-  /*
-    icon: {
-      flex: 1,
-      width: 50,
-      height: 50,
-      marginRight: 8,
-      borderWidth: 1,
-      borderColor: Color.lightGray,
-      padding: 8,
-      alignItems: 'center',
-      backgroundColor: Color.vismeBgLightGray39,
-    },
-    texts: {
-      flex: 1,
-      alignItems: 'flex-start',
-      alignContent: 'flex-start',
-      borderWidth: 0,
-      borderColor: Color.lightGray,
-      backgroundColor: Color.white,
-      padding: 4,
-      marginLeft: 4,
-    },
 */
-
-      name: {
-        fontWeight: 'bold',
-        fontSize: 16,
-      },
-      description: {
-
-      },
-
-  searchInput: {
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: Color.gray,
-    width: '100%',
-    paddingTop: 0,
-    padding: 2,
-    paddingHorizontal: 8,
-    marginBottom: 4,
-    backgroundColor: Color.white,
-    color: Color.black,
-  },
-  
-});

@@ -2,58 +2,58 @@ import React, {useState, useEffect} from 'react';
 import { StyleSheet, ActivityIndicator, Text, TextInput, View, TouchableOpacity, SafeAreaView, ScrollView, Dimensions } from 'react-native'
 import * as SQLite from 'expo-sqlite'
 import Icon from '../utils/VectorIcon'
-import Color from '../utils/Colors'
-
-import Details from '../screens/Details'
+//import * as SplashScreen from 'expo-splash-screen';
+//import Color from '../utils/Colors'
+//import Details from './Details'
 
 const { width } = Dimensions.get('window');
 const windowWidth = width;
 
-export default function Groups({navigation, route}) {
+export default function Categories({navigation, route}) {
   const [db, setDb] = useState(SQLite.openDatabase('professions.db'));
   const [isLoading, setIsLoading] = useState(true);
-  const [persons, setPersons] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchValue, onChangeSearchValue] = useState('');
-  let category_id = route.params.id
-  let title = route.params.title
 
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: title,
+      headerTitle: 'Főcsoportok',
     });
   }, []);
   
   const search = (searchValue) => {
     onChangeSearchValue(searchValue)
     db.transaction(tx => {
-      tx.executeSql('SELECT * FROM persons WHERE category_id = ' + category_id + ' AND (name LIKE "%' + searchValue + '%" OR slug LIKE "%' + searchValue + '%") ORDER BY pos, slug ASC', null,
-        (txObj, resultSet) => setPersons(resultSet.rows._array),
+      tx.executeSql('SELECT * FROM categories WHERE name LIKE "%' + searchValue + '%" OR slug LIKE "%' + searchValue + '%" ORDER BY slug ASC', null,
+        (txObj, resultSet) => setCategories(resultSet.rows._array),
         (txObj, error) => console.log(error)
       );
     });
   }
 
-  const showPersons = () => {
-    return persons.map((persons, index) => {
+  const showCategories = () => {
+    return categories.map((categories, index) => {
       return (
-        <TouchableOpacity key={index} style={styles.row} onPress={() => navigation.navigate('Details', {id: persons.id, title: persons.name})}>
+        <TouchableOpacity key={index} style={styles.row} onPress={() => navigation.navigate('Persons', {id: categories.id, title: categories.name})}>
           <View style={styles.icon}>
-            <Icon type={persons.iconType} name={persons.icon} size={32} color='gray' />
+            <Icon type={categories.iconType} name={categories.icon} size={32} color='gray' />
           </View>
           <View style={styles.text}>
-            <Text style={styles.textTitle}>{persons.name}</Text>
-            <Text style={styles.textSubTitle}>{persons.address}</Text>
+            <Text style={styles.textTitle}>{categories.name}</Text>
+            <Text style={styles.textSubTitle}>{categories.description}</Text>
           </View>
         </TouchableOpacity>
       );
     });
   }  
 
+  // 
+
   useEffect(() => {
     onChangeSearchValue('')
     db.transaction(tx => {
-      tx.executeSql('SELECT * FROM persons WHERE category_id=' + category_id + ' ORDER BY slug ASC', null,
-        (txObj, resultSet) => setPersons(resultSet.rows._array),
+      tx.executeSql('SELECT * FROM categories ORDER BY slug ASC', null,
+        (txObj, resultSet) => setCategories(resultSet.rows._array),
         (txObj, error) => console.log(error)
       );
     });
@@ -62,28 +62,19 @@ export default function Groups({navigation, route}) {
   }, [db]);
 
   if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.loading}>
-          <Text>Loading persons...</Text>
-        </View>
-      </View>
-    )
-    /*
+    //<Text>Loading categories...</Text>
+    // Keep the splash screen visible while we fetch resources
+    //SplashScreen.preventAutoHideAsync()
+    //SplashScreen.hideAsync
+
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" />
       </View>
     )
-    */
+
   }
 
-
-
-
-  //  <TextInput placeholder='Keresés' style={styles.searchInput} />
-  
-  //let id = route.params.id
 
   return (
     <SafeAreaView style={styles.container}>      
@@ -100,12 +91,11 @@ export default function Groups({navigation, route}) {
       </View>
 
       <ScrollView style={styles.scrollView}>
-        {showPersons()}     
+        {showCategories()}     
       </ScrollView>        
     </SafeAreaView>
   )
 }
-
 
 const styles = StyleSheet.create({
   scrollView: {
