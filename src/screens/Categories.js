@@ -57,9 +57,10 @@ export default function Categories({navigation, route}) {
         (txObj, error) => console.log(error)
       );
     });
-
-    setIsLoading(false);
-  }, [db]);
+    //alert(categories.length)
+    console.log(categories.length)
+    setIsLoading(false)
+  }, [db])
 
   if (isLoading) {
     //<Text>Loading categories...</Text>

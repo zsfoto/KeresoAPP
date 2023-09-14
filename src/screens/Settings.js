@@ -30,6 +30,7 @@ export default function Settings() {
 
       for (var i = 0; i < response.data.datas.categories.length; i++) {
         let id = categories[i].id
+        let user_id = categories[i].user_id
         let name = categories[i].name
         let description = categories[i].description
         let slug = categories[i].slug
@@ -43,7 +44,7 @@ export default function Settings() {
 
         db.transaction(tx => {
           tx.executeSql(
-            'INSERT INTO categories (id, name, description, slug, keywords, iconType, icon, pos, action, created, modified) VALUES ('+id+', "'+name+'", "'+description+'", "'+slug+'", "'+keywords+'", "'+iconType+'", "'+icon+'", '+pos+', "'+action+'", "'+created+'", "'+modified+'" )'
+            'INSERT INTO categories (id, user_id, name, description, slug, keywords, iconType, icon, pos, action, created, modified) VALUES ('+id+', "' + user_id + '", "'+name+'", "'+description+'", "'+slug+'", "'+keywords+'", "'+iconType+'", "'+icon+'", '+pos+', "'+action+'", "'+created+'", "'+modified+'" )'
           ),
           null,
           (txObj, resultSet) => {
@@ -61,13 +62,17 @@ export default function Settings() {
 
       for (var i = 0; i < response.data.datas.persons.length; i++) {
         let id = persons[i].id
+        let user_id = persons[i].user_id
         let category_id = persons[i].category_id
         let city_id = persons[i].city_id
         let name = persons[i].name
         let description = persons[i].description
         let phone = persons[i].phone
+        let ext = persons[i].ext
         let phone2 = persons[i].phone2
+        let ext2 = persons[i].ext2
         let fax = persons[i].fax
+        let ext_fax = persons[i].ext_fax
         let email = persons[i].email
         let website = persons[i].website
         let address = persons[i].address
@@ -86,7 +91,7 @@ export default function Settings() {
 
         db.transaction(tx => {
           tx.executeSql(
-            'INSERT INTO persons (id, category_id, city_id, name, description, phone, phone2, fax, email, website, address, more, slug, keywords, iconType, icon, longitude, latitude, pos, visible, action, created, modified) VALUES ('+id+', '+category_id+', '+city_id+', "'+name+'", "'+description+'", "'+phone+'", "'+phone2+'", "'+fax+'", "'+email+'", "'+website+'", "'+address+'", "'+more+'", "'+slug+'", "'+keywords+'", "'+iconType+'", "'+icon+'", "'+longitude+'", "'+latitude+'", '+pos+', '+visible+', "'+action+'", "'+created+'", "'+modified+'")'
+            'INSERT INTO persons (id, user_id, category_id, city_id, name, description, phone, ext, phone2, ext2, fax, ext_fax, email, website, address, more, slug, keywords, iconType, icon, longitude, latitude, pos, visible, action, created, modified) VALUES ('+id+', "' + user_id + '", '+category_id+', '+city_id+', "'+name+'", "'+description+'", "'+phone+'", "'+ext+'", "'+phone2+'", "'+ext2+'", "'+fax+'", "'+ext_fax+'", "'+email+'", "'+website+'", "'+address+'", "'+more+'", "'+slug+'", "'+keywords+'", "'+iconType+'", "'+icon+'", "'+longitude+'", "'+latitude+'", '+pos+', '+visible+', "'+action+'", "'+created+'", "'+modified+'")'
           ),
           null,
           (txObj, resultSet) => {
@@ -121,11 +126,13 @@ export default function Settings() {
         let created = phones[i].created
         let modified = phones[i].modified
 
-        //alert(name)
+        //console.log(name)
+        //let sql = 'INSERT INTO phones (id, user_id, person_id, name, description, phone, ext, email, slug, iconType, icon, pos, visible, action, created, modified) VALUES ('+id+', "'+user_id+'", '+person_id+', "'+name+'", "'+description+'", "'+phone+'", "'+ext+'", "'+email+'", "'+slug+'", "'+iconType+'", "'+icon+'", '+pos+', '+visible+', "'+action+'", "'+created+'", "'+modified+'")'
+        //console.log(sql)
 
         db.transaction(tx => {
           tx.executeSql(
-            'INSERT INTO phones (id, user_id, person_id, name, description, phone, ext, email, slug, iconType, icon, pos, visible, action, created, modified) VALUES ('+id+', '+user_id+', '+person_id+', "'+name+'", "'+description+'", "'+phone+'", "'+ext+'", "'+email+'", "'+slug+'", "'+iconType+'", "'+icon+'", '+pos+', '+visible+', "'+action+'", "'+created+'", "'+modified+'")'
+            'INSERT INTO phones (id, user_id, person_id, name, description, phone, ext, email, slug, iconType, icon, pos, visible, action, created, modified) VALUES ('+id+', "'+user_id+'", '+person_id+', "'+name+'", "'+description+'", "'+phone+'", "'+ext+'", "'+email+'", "'+slug+'", "'+iconType+'", "'+icon+'", '+pos+', '+visible+', "'+action+'", "'+created+'", "'+modified+'")'
           ),
           null,
           (txObj, resultSet) => {
@@ -158,7 +165,7 @@ export default function Settings() {
 
         db.transaction(tx => {
           tx.executeSql(
-            'INSERT INTO openings (id, user_id, person_id, name, hour_from, hour_to, comment, pos, visible, action, created, modified) VALUES ('+id+', '+user_id+', '+person_id+', "'+name+'", "'+hour_from+'", "'+hour_to+'", "'+comment+'", '+pos+', '+visible+', "'+action+'", "'+created+'", "'+modified+'")'
+            'INSERT INTO openings (id, user_id, person_id, name, hour_from, hour_to, comment, pos, visible, action, created, modified) VALUES ('+id+', "'+user_id+'", '+person_id+', "'+name+'", "'+hour_from+'", "'+hour_to+'", "'+comment+'", '+pos+', '+visible+', "'+action+'", "'+created+'", "'+modified+'")'
           ),
           null,
           (txObj, resultSet) => {
@@ -185,7 +192,7 @@ export default function Settings() {
     */
 
     db.transaction(tx => {
-      tx.executeSql('CREATE TABLE IF NOT EXISTS categories (id INTEGER NOT NULL UNIQUE, name TEXT NOT NULL, description TEXT, slug TEXT, keywords TEXT, iconType TEXT DEFAULT "MaterialCommunityIcons", icon TEXT DEFAULT "sitemap-outline", pos INTEGER DEFAULT 1000, action TEXT, created TEXT, modified TEXT)', 
+      tx.executeSql('CREATE TABLE IF NOT EXISTS categories (id INTEGER NOT NULL UNIQUE, user_id TEXT NOT NULL, name TEXT NOT NULL, description TEXT, slug TEXT, keywords TEXT, iconType TEXT DEFAULT "MaterialCommunityIcons", icon TEXT DEFAULT "sitemap-outline", pos INTEGER DEFAULT 1000, action TEXT, created TEXT, modified TEXT)', 
         null,
         (txObj, resultSet) => {
           //Alert.alert('CREATED: TABLE categories');
@@ -197,7 +204,7 @@ export default function Settings() {
     });
 
     db.transaction(tx => {
-      tx.executeSql('CREATE TABLE IF NOT EXISTS persons (id INTEGER NOT NULL UNIQUE, category_id INTEGER, city_id INTEGER, name TEXT NOT NULL,  description TEXT, phone TEXT, phone2 TEXT, fax TEXT, email TEXT, website TEXT, address TEXT, more TEXT, slug TEXT, keywords TEXT, iconType TEXT DEFAULT "MaterialCommunityIcons",  icon TEXT DEFAULT "sitemap-outline",  longitude TEXT, latitude TEXT, pos INTEGER, visible INTEGER, action  TEXT, created TEXT, modified TEXT)', 
+      tx.executeSql('CREATE TABLE IF NOT EXISTS persons (id INTEGER NOT NULL UNIQUE, user_id TEXT NOT NULL, category_id INTEGER, city_id INTEGER, name TEXT NOT NULL,  description TEXT, phone TEXT, ext TEXT, phone2 TEXT, ext2 TEXT, fax TEXT, ext_fax TEXT, email TEXT, website TEXT, address TEXT, more TEXT, slug TEXT, keywords TEXT, iconType TEXT DEFAULT "MaterialCommunityIcons",  icon TEXT DEFAULT "sitemap-outline",  longitude TEXT, latitude TEXT, pos INTEGER, visible INTEGER, action  TEXT, created TEXT, modified TEXT)', 
         null,
         (txObj, resultSet) => {
           //Alert.alert('CREATED: TABLE categories');
@@ -209,7 +216,7 @@ export default function Settings() {
     });
 
     db.transaction(tx => {
-      tx.executeSql('CREATE TABLE IF NOT EXISTS phones (id INTEGER NOT NULL UNIQUE, user_id INTEGER, person_id INTEGER, name TEXT, description TEXT, phone TEXT, ext TEXT, email TEXT, slug TEXT, iconType TEXT DEFAULT "MaterialCommunityIcons", icon TEXT DEFAULT "sitemap-outline", pos INTEGER, visible INTEGER, action TEXT, created TEXT, modified TEXT)', 
+      tx.executeSql('CREATE TABLE IF NOT EXISTS phones (id INTEGER NOT NULL UNIQUE, user_id TEXT NOT NULL, person_id INTEGER, name TEXT, description TEXT, phone TEXT, ext TEXT, email TEXT, slug TEXT, iconType TEXT DEFAULT "MaterialCommunityIcons", icon TEXT DEFAULT "sitemap-outline", pos INTEGER, visible INTEGER, action TEXT, created TEXT, modified TEXT)', 
         null,
         (txObj, resultSet) => {
           //Alert.alert('CREATED: TABLE phones');
@@ -222,7 +229,7 @@ export default function Settings() {
     });
 
     db.transaction(tx => {
-      tx.executeSql('CREATE TABLE IF NOT EXISTS openings (id INTEGER NOT NULL UNIQUE, user_id INTEGER, person_id INTEGER, name TEXT, hour_from TEXT, hour_to TEXT, comment TEXT, pos INTEGER, visible INTEGER, action TEXT, created TEXT, modified TEXT)', 
+      tx.executeSql('CREATE TABLE IF NOT EXISTS openings (id INTEGER NOT NULL UNIQUE, user_id TEXT NOT NULL, person_id INTEGER, name TEXT, hour_from TEXT, hour_to TEXT, comment TEXT, pos INTEGER, visible INTEGER, action TEXT, created TEXT, modified TEXT)', 
         null,
         (txObj, resultSet) => {
           //Alert.alert('CREATED: TABLE openings');
@@ -243,6 +250,7 @@ export default function Settings() {
       tx.executeSql('DROP TABLE categories', 
         null,
         (txObj, resultSet) => {
+          console.log(resultSet);
           //Alert.alert('Dropped categories table');
         },
         (txObj, error) => {
